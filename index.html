@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foodie - Order Food Online</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Manrope font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+        /* Custom scrollbar for cart and filters */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px; /* For horizontal scroll */
+            width: 6px; /* For vertical scroll */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background-color: #f1f5f9;
+        }
+        /* Hide scrollbar arrows */
+        .custom-scrollbar::-webkit-scrollbar-button {
+            display: none;
+        }
+        /* Hero Gradient */
+        .hero-gradient {
+            background: linear-gradient(135deg, #5B21B6 0%, #8B5CF6 100%);
+        }
+        /* Modal Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); }
+            to { transform: translateX(100%); }
+        }
+        .modal-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        .modal-pop-in {
+            animation: popIn 0.3s ease-out forwards;
+        }
+        .sidebar-slide-in {
+            animation: slideInRight 0.3s ease-out forwards;
+        }
+        .sidebar-slide-out {
+            animation: slideOutRight 0.3s ease-out forwards;
+        }
+        /* Professional Add Button */
+        .item-control .quantity-control {
+            display: none;
+        }
+        .item-control.in-cart .quantity-control {
+            display: flex;
+        }
+        .item-control.in-cart .add-to-cart-btn {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
+            <!-- Logo -->
+            <a href="#" class="text-3xl font-extrabold">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500">Foodie</span>
+            </a>
+            <!-- Navigation -->
+            <div class="flex items-center space-x-4">
+                <button id="login-button" class="hidden sm:block text-gray-600 font-medium hover:text-purple-600 transition-colors">
+                    Login / Sign Up
+                </button>
+                <button id="cart-button" class="relative rounded-full p-2 text-gray-600 hover:bg-gray-100 hover:text-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all">
+                    <!-- Cart Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <span id="cart-count" class="absolute -top-1 -right-1 block h-5 w-5 rounded-full bg-orange-500 text-white text-xs font-medium flex items-center justify-center shadow-lg">0</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white relative overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 text-center relative z-10">
+            <h2 class="text-4xl md:text-6xl font-extrabold mb-4">Craving something delicious?</h2>
+            <p class="text-lg md:text-xl text-purple-100 mb-8 max-w-2xl mx-auto">Order from the best restaurants in your city, delivered to your doorstep.</p>
+            <!-- Search Bar -->
+            <div class="mt-6 max-w-2xl mx-auto bg-white rounded-full shadow-2xl p-2 flex items-center">
+                <input type="text" placeholder="Search for restaurants, cuisines..." class="w-full text-gray-900 text-lg py-3 px-6 rounded-full border-none focus:ring-0">
+                <button class="flex-shrink-0 bg-purple-600 text-white font-semibold rounded-full px-6 py-3 hover:bg-purple-700 transition-colors duration-300 transform active:scale-95">
+                    Search
+                </button>
+            </div>
+        </div>
+        <!-- Decorative SVG -->
+        <svg class="absolute bottom-0 left-0 w-full h-16 text-gray-50" fill="currentColor" viewBox="0 0 1440 160" preserveAspectRatio="none">
+            <path d="M0 160L48 154.7C96 149 192 139 288 117.3C384 96 480 64 576 64C672 64 768 96 864 101.3C960 107 1056 85 1152 74.7C1248 64 1344 64 1392 64L1440 64L1440 160L1392 160C1344 160 1248 160 1152 160C1056 160 960 160 864 160C768 160 672 160 576 160C480 160 384 160 288 160C192 160 96 160 48 160L0 160Z"></path>
+        </svg>
+    </section>
+    <!-- Cuisine Filters -->
+    <section class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <h3 class="text-2xl font-bold text-gray-800 mb-4">What's on your mind?</h3>
+        <div class="flex space-x-3 sm:space-x-4 overflow-x-auto custom-scrollbar pb-2">
+            <!-- Filter Icons via Heroicons (inline SVG) -->
+            <button class="filter-btn active bg-purple-100 text-purple-700 font-semibold py-2 px-5 rounded-full whitespace-nowrap transition-all flex items-center gap-2" data-filter="All">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                All
+            </button>
+            <button class="filter-btn bg-gray-100 text-gray-700 font-semibold py-2 px-5 rounded-full whitespace-nowrap hover:bg-gray-200 transition-all flex items-center gap-2" data-filter="Hyderabadi">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.002 6.002 0 0110.11-3.53.5.5 0 00.817-.574A.5.5 0 0014.5 3.5a7 7 0 00-11.45 4.045.5.5 0 00.86.382.5.5 0 00-.478-.901z" clip-rule="evenodd" /></svg>
+                Biryani
+            </button>
+            <button class="filter-btn bg-gray-100 text-gray-700 font-semibold py-2 px-5 rounded-full whitespace-nowrap hover:bg-gray-200 transition-all flex items-center gap-2" data-filter="Pizza">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+                Pizza
+            </button>
+            <button class="filter-btn bg-gray-100 text-gray-700 font-semibold py-2 px-5 rounded-full whitespace-nowrap hover:bg-gray-200 transition-all flex items-center gap-2" data-filter="North Indian">North Indian</button>
+            <button class="filter-btn bg-gray-100 text-gray-700 font-semibold py-2 px-5 rounded-full whitespace-nowrap hover:bg-gray-200 transition-all flex items-center gap-2" data-filter="South Indian">South Indian</button>
+            <button class="filter-btn bg-gray-100 text-gray-700 font-semibold py-2 px-5 rounded-full whitespace-nowrap hover:bg-gray-200 transition-all flex items-center gap-2" data-filter="Chinese">Chinese</button>
+        </div>
+    </section>
+    <!-- Main Content Area -->
+    <main class="container mx-auto p-4 sm:px-6 lg:px-8 mt-4">
+       
+        <!-- Restaurant List View (Default) -->
+        <div id="restaurant-view">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Top Restaurants Near You</h2>
+            <div id="restaurant-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Restaurant cards will be injected here by JS -->
+            </div>
+        </div>
+        <!-- Menu View (Hidden by default) -->
+        <div id="menu-view" class="hidden">
+            <button id="back-to-restaurants" class="mb-6 inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <!-- Back Icon SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                All Restaurants
+            </button>
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <!-- Restaurant Header -->
+                <div class="relative">
+                    <img id="menu-restaurant-image" src="https://placehold.co/1200x400/8B5CF6/white?text=Restaurant" alt="Restaurant Image" class="w-full h-64 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-6">
+                        <h2 id="menu-restaurant-name" class="text-4xl font-extrabold text-white shadow-lg"></h2>
+                        <p id="menu-restaurant-cuisine" class="text-lg text-gray-200 mt-1"></p>
+                    </div>
+                </div>
+                <div class="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 bg-gray-50 gap-4">
+                    <div class="flex items-center gap-4">
+                        <span id="menu-restaurant-rating" class="flex items-center text-lg font-bold text-gray-800">
+                            <!-- Star Icon SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.445a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.539 1.118l-3.367-2.445a1 1 0 00-1.176 0l-3.367 2.445c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.07 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
+                            </svg>
+                        </span>
+                        <span class="text-gray-600 hidden sm:inline">|</span>
+                        <span id="menu-restaurant-time" class="text-md font-medium text-gray-700"></span>
+                        <span class="text-gray-600 hidden sm:inline">|</span>
+                        <span id="menu-restaurant-location" class="text-md font-medium text-gray-700"></span>
+                    </div>
+                </div>
+                <!-- ✨ AI Assistant Section -->
+                <div class="p-6 border-b border-gray-200 bg-gray-50">
+                    <button id="ai-menu-helper-btn" class="w-full bg-gradient-to-r from-pink-500 to-orange-400 text-white font-semibold py-3 px-5 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform active:scale-95 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 001.414 1.414L9 9.414V12a1 1 0 102 0V9.414l.293.293a1 1 0 001.414-1.414l-3-3z" clip-rule="evenodd" />
+                        </svg>
+                        ✨ AI Assistant: Help me choose!
+                    </button>
+                    <div id="ai-menu-loader" class="text-center py-4 hidden">
+                        <svg class="animate-spin h-5 w-5 text-purple-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="text-sm text-gray-600 mt-2">✨ Thinking of the perfect dish for you...</p>
+                    </div>
+                    <div id="ai-menu-suggestion" class="mt-4 p-4 bg-purple-50 rounded-lg text-gray-700 hidden font-medium"></div>
+                </div>
+                <!-- Menu Item List -->
+                <div id="menu-item-list" class="p-4 md:p-6 divide-y divide-gray-100">
+                    <!-- Menu items will be injected here by JS -->
+                </div>
+            </div>
+        </div>
+    </main>
+   
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 mt-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+            <h2 class="text-2xl font-bold text-white mb-2">Foodie</h2>
+            <p>&copy; 2025 Foodie Technologies Pvt. Ltd. All rights reserved.</p>
+            <p class="text-sm mt-2">Made with ❤️ in Hanamkonda</p>
+        </div>
+    </footer>
+    <!-- Cart Sidebar (Hidden by default) -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full">
+        <div class="flex flex-col h-full">
+            <!-- Cart Header -->
+            <div class="flex justify-between items-center p-5 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">Your Order</h2>
+                <button id="close-cart" class="text-gray-500 hover:text-purple-600 transition-colors">
+                    <!-- Close Icon SVG -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Cart Body -->
+            <div id="cart-body" class="flex-grow p-5 overflow-y-auto custom-scrollbar">
+                <!-- Empty State -->
+                <div id="cart-empty-state" class="text-center text-gray-500 mt-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <p class="mt-4 font-medium">Your cart is empty</p>
+                    <p class="text-sm">Add items from a restaurant to get started.</p>
+                </div>
+                <!-- Cart Items List -->
+                <div id="cart-items-list" class="divide-y divide-gray-200">
+                    <!-- JS-injected items -->
+                </div>
+            </div>
+            <!-- Cart Footer -->
+            <div id="cart-footer" class="p-5 border-t border-gray-200 bg-gray-50 shadow-inner hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-medium text-gray-700">Subtotal:</span>
+                    <span id="cart-total" class="text-xl font-bold text-gray-900">₹0.00</span>
+                </div>
+                <!-- ✨ AI Cart Helper -->
+                <div id="ai-cart-helper-section" class="mb-4">
+                     <button id="ai-cart-helper-btn" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform active:scale-95 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                           <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h.5a1.5 1.5 0 000-3H7a1 1 0 01-1-1V5a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
+                        </svg>
+                        ✨ Get pairing suggestions
+                     </button>
+                     <div id="ai-cart-loader" class="text-center py-3 hidden">
+                        <svg class="animate-spin h-5 w-5 text-purple-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="text-sm text-gray-600 mt-2">✨ Asking our chef...</p>
+                    </div>
+                    <div id="ai-cart-suggestion" class="mt-3 p-3 bg-blue-50 rounded-lg text-gray-700 hidden font-medium"></div>
+                </div>
+                <button id="checkout-button" class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 shadow-lg hover:shadow-purple-300 transform active:scale-95">
+                    Go to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden modal-fade-in"></div>
+    <!-- Payment Modal (Hidden by default) -->
+    <div id="payment-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden modal-fade-in p-4">
+        <div id="payment-content" class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md transform opacity-0">
+            <h2 class="text-2xl font-bold text-center text-gray-900 mb-6">Confirm Payment</h2>
+           
+            <!-- Payment Details -->
+            <div class="space-y-4">
+                <div>
+                    <label for="card-number" class="block text-sm font-medium text-gray-700">Card Number</label>
+                    <input type="text" id="card-number" value="4242 4242 4242 4242" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label for="expiry-date" class="block text-sm font-medium text-gray-700">Expiry (MM/YY)</label>
+                        <input type="text" id="expiry-date" value="12/26" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                    <div class="flex-1">
+                        <label for="cvc" class="block text-sm font-medium text-gray-700">CVC</label>
+                        <input type="text" id="cvc" value="123" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-medium text-gray-700">Total to Pay:</span>
+                        <span id="payment-total" class="text-2xl font-bold text-purple-600">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+           
+            <!-- Payment Buttons -->
+            <div class="mt-8 grid grid-cols-2 gap-4">
+                <button id="cancel-payment-button" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transform active:scale-95">
+                    Cancel
+                </button>
+                <button id="confirm-payment-button" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-300 shadow-lg hover:shadow-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center justify-center transform active:scale-95">
+                    <span id="pay-button-text">Pay Now</span>
+                    <svg id="payment-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+   
+    <!-- Login Modal (Hidden by default) -->
+    <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden modal-fade-in p-4">
+        <div id="login-content" class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md transform opacity-0">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Login or Sign Up</h2>
+                <button id="close-login-button" class="text-gray-500 hover:text-purple-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+           
+            <!-- Login Form -->
+            <div class="space-y-4">
+                <div>
+                    <label for="phone-number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                    <div class="mt-1 flex rounded-md shadow-sm">
+                        <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">+91</span>
+                        <input type="text" id="phone-number" placeholder="98765 43210" class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-none rounded-r-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                    </div>
+                </div>
+                <button class="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 shadow-lg hover:shadow-purple-300 transform active:scale-95">
+                    Send OTP
+                </button>
+                <p class="text-xs text-gray-500 text-center">By continuing, you agree to our Terms of Service and Privacy Policy.</p>
+            </div>
+        </div>
+    </div>
+    <div id="login-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden modal-fade-in"></div>
+   
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed top-20 right-5 w-full max-w-xs p-4 rounded-lg shadow-2xl z-[100] transform translate-x-full transition-all duration-300 ease-in-out">
+        <p id="notification-message" class="font-medium text-white"></p>
+    </div>
+    <script>
+        // --- MOCK DATA (INDIAN-BASED & EXPANDED WITH HANAMKONDA RESTAURANTS) ---
+        const MOCK_RESTAURANTS = [
+            { id: 'r1', name: 'Paradise Biryani', cuisine: 'Hyderabadi, North Indian', img: 'https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.5, deliveryTime: '30-35 min' },
+            { id: 'r2', name: 'Dakshin Flavors', cuisine: 'South Indian, Tiffins', img: 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Waddepally', rating: 4.7, deliveryTime: '20-25 min' },
+            { id: 'r3', name: 'Mumbai Masala', cuisine: 'North Indian, Chaat', img: 'https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Kukatpally, HYD', rating: 4.2, deliveryTime: '40-45 min' },
+            { id: 'r4', name: 'Beijing Bites', cuisine: 'Chinese, Momos', img: 'https://images.pexels.com/photos/1096398/pexels-photo-1096398.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.3, deliveryTime: '25-30 min' },
+            { id: 'r5', name: 'La Pinoz Pizza', cuisine: 'Pizza, Fast Food', img: 'https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Subedari', rating: 4.1, deliveryTime: '30-35 min' },
+            { id: 'r6', name: 'Karim\'s', cuisine: 'North Indian, Mughlai', img: 'https://images.pexels.com/photos/1096400/pexels-photo-1096400.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Connaught Place, Delhi', rating: 4.6, deliveryTime: '45-50 min' },
+            { id: 'r7', name: 'Saravana Bhavan', cuisine: 'South Indian, Tiffins', img: 'https://images.pexels.com/photos/461199/pexels-photo-461199.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'T. Nagar, Chennai', rating: 4.5, deliveryTime: '30-35 min' },
+            { id: 'r8', name: 'Oh! Calcutta', cuisine: 'Bengali, Seafood', img: 'https://images.pexels.com/photos/1096401/pexels-photo-1096401.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Ballygunge, Kolkata', rating: 4.4, deliveryTime: '40-45 min' },
+            { id: 'r9', name: 'Taco Bell (Payment Fail Test)', cuisine: 'Mexican', img: 'https://images.pexels.com/photos/70498/pexels-photo-70498.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Indiranagar, Bangalore', rating: 3.9, deliveryTime: '25-30 min' },
+            // New Hanamkonda restaurants with updated images
+            { id: 'r10', name: 'Aranyam Jungle Restaurant', cuisine: 'Multi-Cuisine, Barbeque', img: 'https://images.pexels.com/photos/1634562/pexels-photo-1634562.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.8, deliveryTime: '25-30 min' },
+            { id: 'r11', name: 'Food on Fire Barbeque & Grill', cuisine: 'Barbeque, Grill', img: 'https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.7, deliveryTime: '20-25 min' },
+            { id: 'r12', name: 'MS Family Restaurant', cuisine: 'Family-Style, Multi-Cuisine', img: 'https://images.pexels.com/photos/1096404/pexels-photo-1096404.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.8, deliveryTime: '30-35 min' },
+            { id: 'r13', name: 'Vindhu - Traditional Telugu Kitchen', cuisine: 'Telugu, South Indian', img: 'https://images.pexels.com/photos/1096405/pexels-photo-1096405.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.6, deliveryTime: '15-20 min' },
+            { id: 'r14', name: 'Kitchen 1970s Hanamkonda', cuisine: 'Retro, North Indian', img: 'https://images.pexels.com/photos/1096406/pexels-photo-1096406.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.8, deliveryTime: '25-30 min' },
+            { id: 'r15', name: 'Flavours of Andhra', cuisine: 'Andhra, Spicy Specialties', img: 'https://images.pexels.com/photos/1096407/pexels-photo-1096407.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop', location: 'Hanamkonda', rating: 4.7, deliveryTime: '20-25 min' },
+        ];
+        const MOCK_MENUS = {
+            'r1': [
+                { id: 'm1_1', name: 'Hyderabadi Chicken Biryani', price: 280, isVeg: false, img: 'https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm1_2', name: 'Paneer Butter Masala', price: 220, isVeg: true, img: 'https://images.pexels.com/photos/1096406/pexels-photo-1096406.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm1_3', name: 'Garlic Naan', price: 60, isVeg: true, img: 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm1_4', name: 'Mutton Haleem (Seasonal)', price: 350, isVeg: false, img: 'https://images.pexels.com/photos/1096400/pexels-photo-1096400.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r2': [
+                { id: 'm2_1', name: 'Masala Dosa', price: 80, isVeg: true, img: 'https://images.pexels.com/photos/32229637/pexels-photo-32229637.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm2_2', name: 'Idli Sambar (2 pcs)', price: 60, isVeg: true, img: 'https://images.pexels.com/photos/461199/pexels-photo-461199.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm2_3', name: 'Poori Korma (2 pcs)', price: 90, isVeg: true, img: 'https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r3': [
+                { id: 'm3_1', name: 'Pav Bhaji', price: 120, isVeg: true, img: 'https://images.pexels.com/photos/34507155/pexels-photo-34507155.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm3_2', name: 'Chole Bhature', price: 150, isVeg: true, img: 'https://images.pexels.com/photos/1096404/pexels-photo-1096404.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm3_3', name: 'Pani Puri (6 pcs)', price: 50, isVeg: true, img: 'https://images.pexels.com/photos/70498/pexels-photo-70498.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r4': [
+                { id: 'm4_1', name: 'Chilli Chicken Dry', price: 250, isVeg: false, img: 'https://images.pexels.com/photos/1096398/pexels-photo-1096398.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm4_2', name: 'Veg Hakka Noodles', price: 180, isVeg: true, img: 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm4_3', name: 'Chicken Momos (6 pcs)', price: 120, isVeg: false, img: 'https://images.pexels.com/photos/1096400/pexels-photo-1096400.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r5': [
+                { id: 'm5_1', name: 'Margherita Pizza (7")', price: 199, isVeg: true, img: 'https://images.pexels.com/photos/31007263/pexels-photo-31007263.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm5_2', name: 'Farmhouse Pizza (7")', price: 249, isVeg: true, img: 'https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm5_3', name: 'Garlic Breadsticks', price: 139, isVeg: true, img: 'https://images.pexels.com/photos/461199/pexels-photo-461199.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r6': [
+                { id: 'm6_1', name: 'Mutton Korma', price: 450, isVeg: false, img: 'https://images.pexels.com/photos/1096400/pexels-photo-1096400.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm6_2', name: 'Chicken Jahangiri', price: 420, isVeg: false, img: 'https://images.pexels.com/photos/1096405/pexels-photo-1096405.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm6_3', name: 'Sheermal', price: 80, isVeg: true, img: 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r7': [
+                { id: 'm7_1', name: 'Ghee Roast Dosa', price: 120, isVeg: true, img: 'https://images.pexels.com/photos/32229637/pexels-photo-32229637.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm7_2', name: 'Mini Tiffin', price: 150, isVeg: true, img: 'https://images.pexels.com/photos/461199/pexels-photo-461199.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm7_3', name: 'Filter Coffee', price: 50, isVeg: true, img: 'https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r8': [
+                { id: 'm8_1', name: 'Daab Chingri (Prawns in Coconut)', price: 550, isVeg: false, img: 'https://images.pexels.com/photos/1096401/pexels-photo-1096401.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm8_2', name: 'Kolkata Fish Fry', price: 300, isVeg: false, img: 'https://images.pexels.com/photos/1096398/pexels-photo-1096398.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm8_3', name: 'Mishti Doi', price: 120, isVeg: true, img: 'https://images.pexels.com/photos/70498/pexels-photo-70498.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r9': [
+                { id: 'm9_1', name: 'Crunchy Taco', price: 149.99, isVeg: true, img: 'https://images.pexels.com/photos/70498/pexels-photo-70498.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm9_2', name: 'Chicken Burrito', price: 220, isVeg: false, img: 'https://images.pexels.com/photos/1096400/pexels-photo-1096400.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            // New menus for Hanamkonda restaurants with updated images
+            'r10': [
+                { id: 'm10_1', name: 'Jungle Barbeque Chicken', price: 350, isVeg: false, img: 'https://images.pexels.com/photos/1634562/pexels-photo-1634562.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm10_2', name: 'Veg Grill Platter', price: 250, isVeg: true, img: 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm10_3', name: 'Jungle Special Biryani', price: 300, isVeg: false, img: 'https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r11': [
+                { id: 'm11_1', name: 'Flame Grilled Kebabs', price: 280, isVeg: false, img: 'https://images.pexels.com/photos/30215494/pexels-photo-30215494.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm11_2', name: 'BBQ Paneer Tikka', price: 220, isVeg: true, img: 'https://images.pexels.com/photos/1096406/pexels-photo-1096406.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm11_3', name: 'Grilled Corn', price: 80, isVeg: true, img: 'https://images.pexels.com/photos/461199/pexels-photo-461199.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r12': [
+                { id: 'm12_1', name: 'Family Chicken Curry', price: 250, isVeg: false, img: 'https://images.pexels.com/photos/1096404/pexels-photo-1096404.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm12_2', name: 'Veg Biryani', price: 200, isVeg: true, img: 'https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm12_3', name: 'Roti Basket', price: 60, isVeg: true, img: 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r13': [
+                { id: 'm13_1', name: 'Telugu Gongura Chicken', price: 320, isVeg: false, img: 'https://images.pexels.com/photos/1096405/pexels-photo-1096405.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm13_2', name: 'Pesarattu Dosa', price: 100, isVeg: true, img: 'https://images.pexels.com/photos/32229637/pexels-photo-32229637.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm13_3', name: 'Telugu Pickle', price: 50, isVeg: true, img: 'https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r14': [
+                { id: 'm14_1', name: 'Retro Butter Chicken', price: 280, isVeg: false, img: 'https://images.pexels.com/photos/1096406/pexels-photo-1096406.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm14_2', name: 'Naan Platter', price: 120, isVeg: true, img: 'https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm14_3', name: 'Dal Makhani', price: 180, isVeg: true, img: 'https://images.pexels.com/photos/1096404/pexels-photo-1096404.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+            'r15': [
+                { id: 'm15_1', name: 'Andhra Spicy Chicken Fry', price: 300, isVeg: false, img: 'https://images.pexels.com/photos/34636253/pexels-photo-34636253.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm15_2', name: 'Gongura Pachadi', price: 80, isVeg: true, img: 'https://images.pexels.com/photos/1099680/pexels-photo-1099680.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+                { id: 'm15_3', name: 'Spicy Rasam', price: 60, isVeg: true, img: 'https://images.pexels.com/photos/461199/pexels-photo-461199.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop' },
+            ],
+        };
+        // --- APPLICATION STATE ---
+        let cart = []; // Array of { ...menuItem, quantity: 1 }
+        let currentRestaurantId = null;
+        // --- DOM ELEMENTS ---
+        const restaurantView = document.getElementById('restaurant-view');
+        const restaurantList = document.getElementById('restaurant-list');
+        const menuView = document.getElementById('menu-view');
+        const menuItemList = document.getElementById('menu-item-list');
+        const cartButton = document.getElementById('cart-button');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const cartOverlay = document.getElementById('cart-overlay');
+        const closeCartButton = document.getElementById('close-cart');
+        const cartItemsList = document.getElementById('cart-items-list');
+        const cartEmptyState = document.getElementById('cart-empty-state');
+        const cartFooter = document.getElementById('cart-footer');
+        const cartTotal = document.getElementById('cart-total');
+        const cartCount = document.getElementById('cart-count');
+        const backToRestaurantsButton = document.getElementById('back-to-restaurants');
+        const checkoutButton = document.getElementById('checkout-button');
+        const paymentModal = document.getElementById('payment-modal');
+        const paymentContent = document.getElementById('payment-content');
+        const paymentTotal = document.getElementById('payment-total');
+        const cancelPaymentButton = document.getElementById('cancel-payment-button');
+        const confirmPaymentButton = document.getElementById('confirm-payment-button');
+        const payButtonText = document.getElementById('pay-button-text');
+        const paymentSpinner = document.getElementById('payment-spinner');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
+        const loginButton = document.getElementById('login-button');
+        const loginModal = document.getElementById('login-modal');
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginContent = document.getElementById('login-content');
+        const closeLoginButton = document.getElementById('close-login-button');
+       
+        // --- ✨ AI Feature DOM Elements ---
+        const aiMenuHelperBtn = document.getElementById('ai-menu-helper-btn');
+        const aiMenuLoader = document.getElementById('ai-menu-loader');
+        const aiMenuSuggestion = document.getElementById('ai-menu-suggestion');
+        const aiCartHelperBtn = document.getElementById('ai-cart-helper-btn');
+        const aiCartLoader = document.getElementById('ai-cart-loader');
+        const aiCartSuggestion = document.getElementById('ai-cart-suggestion');
+        // --- ✨ Gemini API Function ---
+       
+        /**
+         * Calls the Gemini API.
+         * @param {string} prompt The user prompt for the LLM.
+         * @param {number} retries Number of retries for exponential backoff.
+         * @returns {Promise<string>} The generated text response.
+         */
+        async function callGeminiAPI(prompt, retries = 3, delay = 1000) {
+            // IMPORTANT: Leave apiKey as ""
+            // The Canvas environment will automatically provide the necessary API key.
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                // No grounding or system instruction needed for this creative task.
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    if (response.status === 429 && retries > 0) { // Handle rate limiting
+                        console.warn(`Gemini API rate limited. Retrying in ${delay}ms... (${retries} retries left)`);
+                        await new Promise(res => setTimeout(res, delay));
+                        return callGeminiAPI(prompt, retries - 1, delay * 2); // Exponential backoff
+                    }
+                    throw new Error(`API Error: ${response.statusText} (Status: ${response.status})`);
+                }
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    return candidate.content.parts[0].text;
+                } else {
+                    console.error("Gemini API Error: Invalid response structure.", result);
+                    return "Sorry, I couldn't get a response. Please try again.";
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                if (retries > 0) {
+                    console.warn(`Fetch error. Retrying in ${delay}ms... (${retries} retries left)`);
+                    await new Promise(res => setTimeout(res, delay));
+                    return callGeminiAPI(prompt, retries - 1, delay * 2); // Exponential backoff
+                }
+                return "Sorry, I'm having trouble connecting to the AI. Please check your connection and try again.";
+            }
+        }
+       
+        // --- MOCK MICROSERVICES ---
+       
+        /**
+         * Simulates the Payment Service (payment_service.py)
+         * It will fail if the total amount ends in .99
+         */
+        function mockPaymentService(paymentPayload) {
+            console.log("[Client] Calling Mock Payment Service...", paymentPayload);
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const { amount, order_id } = paymentPayload;
+                    if (String(amount).endsWith(".99")) {
+                        // Simulate payment failure
+                        console.log(`[Mock Payment Service] Payment FAILED for order ${order_id}`);
+                        const errorResponse = {
+                            payment_id: `pay_${Date.now()}`,
+                            order_id: order_id,
+                            status: "FAILED",
+                            message: "Payment declined by bank (Test Failure)",
+                            transaction_id: null
+                        };
+                        reject({ status: 400, data: errorResponse });
+                    } else {
+                        // Simulate payment success
+                        console.log(`[Mock Payment Service] Payment SUCCESS for order ${order_id}`);
+                        const successResponse = {
+                            payment_id: `pay_${Date.now()}`,
+                            order_id: order_id,
+                            status: "SUCCESS",
+                            message: "Payment processed successfully",
+                            transaction_id: `txn_${Date.now()}`
+                        };
+                        resolve({ status: 201, data: successResponse });
+                    }
+                }, 1500); // Simulate network delay
+            });
+        }
+        /**
+         * Simulates the Order Service (order_service.py)
+         * This service, in turn, calls the Payment Service.
+         */
+        async function mockOrderService(orderPayload) {
+            console.log("[Client] Calling Mock Order Service...", orderPayload);
+            const { total_amount, ...restOfOrder } = orderPayload;
+            const order_id = `ORD${Date.now()}`;
+           
+            console.log(`[Mock Order Service] Order ${order_id} created. Calling Payment Service...`);
+           
+            try {
+                // Synchronous call to Payment Service
+                const paymentPayload = {
+                    order_id: order_id,
+                    amount: total_amount
+                };
+                const paymentResponse = await mockPaymentService(paymentPayload);
+               
+                // Payment was successful
+                const finalOrder = {
+                    ...restOfOrder,
+                    order_id: order_id,
+                    total_amount: total_amount,
+                    status: "CONFIRMED",
+                    payment_transaction_id: paymentResponse.data.transaction_id
+                };
+                console.log(`[Mock Order Service] Order ${order_id} confirmed.`);
+                // Simulate publishing event
+                console.log(`[Mock Order Service] Publishing 'OrderConfirmed' event for ${order_id}.`);
+                return { status: 201, data: finalOrder };
+               
+            } catch (paymentError) {
+                // Payment failed
+                const finalOrder = {
+                    ...restOfOrder,
+                    order_id: order_id,
+                    total_amount: total_amount,
+                    status: "PAYMENT_FAILED"
+                };
+                console.log(`[Mock Order Service] Order ${order_id} failed due to payment.`);
+                throw { status: 400, data: { error: "Payment failed", order: finalOrder } };
+            }
+        }
+        // --- UI RENDERING FUNCTIONS ---
+       
+        function formatCurrency(amount) {
+            // Format for Indian Rupees
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+        function renderRestaurants(filter = 'All') {
+            restaurantList.innerHTML = '';
+           
+            const filteredRestaurants = MOCK_RESTAURANTS.filter(r =>
+                filter === 'All' || r.cuisine.includes(filter)
+            );
+           
+            if(filteredRestaurants.length === 0) {
+                restaurantList.innerHTML = `<p class="text-gray-600 col-span-full text-center">No restaurants found for this filter.</p>`;
+                return;
+            }
+           
+            filteredRestaurants.forEach(restaurant => {
+                const card = document.createElement('div'); // Changed to div for explicit click handling
+                card.className = 'bg-white rounded-2xl shadow-lg overflow-hidden transform hover:shadow-2xl hover:shadow-purple-200 hover:-translate-y-1 transition-all duration-300 cursor-pointer';
+                card.innerHTML = `
+                    <img src="${restaurant.img}" alt="${restaurant.name}" class="w-full h-48 object-cover">
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold text-gray-800">${restaurant.name}</h3>
+                        <p class="text-sm text-gray-500 mt-1 truncate">${restaurant.cuisine}</p>
+                        <div class="flex justify-between items-center mt-4 text-sm font-medium">
+                            <span class="flex items-center bg-green-100 text-green-800 px-2 py-0.5 rounded-md">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.445a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.539 1.118l-3.367-2.445a1 1 0 00-1.176 0l-3.367 2.445c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.07 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" /></svg>
+                                ${restaurant.rating}
+                            </span>
+                            <span class="text-gray-600">${restaurant.deliveryTime}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">${restaurant.location}</p>
+                    </div>
+                `;
+                // Explicit click listener for navigation
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.hash = `restaurant/${restaurant.id}`;
+                });
+                restaurantList.appendChild(card);
+            });
+        }
+        function showMenu(restaurantId) {
+            const restaurant = MOCK_RESTAURANTS.find(r => r.id === restaurantId);
+            if (!restaurant) {
+                // If restaurant not found, go back to home
+                showRestaurants();
+                window.location.hash = ''; // Clear invalid hash
+                return;
+            }
+            // Check if cart has items from a different restaurant
+            if (cart.length > 0 && currentRestaurantId !== restaurantId) {
+                showNotification("Cart cleared to add items from a new restaurant.", false);
+                cart = [];
+                updateCart(); // This will also update all menu buttons to 'Add'
+            }
+            currentRestaurantId = restaurantId;
+           
+            // Populate menu details
+            document.getElementById('menu-restaurant-image').src = restaurant.img.replace('400x250', '1200x400').replace('w=400&h=250', 'w=1200&h=400');
+            document.getElementById('menu-restaurant-name').textContent = restaurant.name;
+            document.getElementById('menu-restaurant-cuisine').textContent = restaurant.cuisine;
+            document.getElementById('menu-restaurant-rating').innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.367 2.445a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.539 1.118l-3.367-2.445a1 1 0 00-1.176 0l-3.367 2.445c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.07 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
+                </svg>
+                ${restaurant.rating}
+            `;
+            document.getElementById('menu-restaurant-time').textContent = restaurant.deliveryTime;
+            document.getElementById('menu-restaurant-location').textContent = restaurant.location;
+            // Populate menu items
+            const menuItems = MOCK_MENUS[restaurantId] || [];
+            menuItemList.innerHTML = '';
+            menuItems.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-start py-6';
+                itemEl.innerHTML = `
+                    <div class="flex-1 pr-4">
+                        <span class="inline-block w-3 h-3 rounded-full border ${item.isVeg ? 'border-green-600 bg-green-600' : 'border-red-600 bg-red-600'}"></span>
+                        <h4 class="text-lg font-bold text-gray-900 mt-1">${item.name}</h4>
+                        <p class="text-md font-semibold text-gray-700">${formatCurrency(item.price)}</p>
+                    </div>
+                    <div class="flex-shrink-0 text-right w-28">
+                        <img src="${item.img}" alt="${item.name}" class="w-24 h-24 rounded-lg object-cover shadow-md mb-2 mx-auto">
+                        <div id="item-control-${item.id}" class="item-control relative w-24 mx-auto">
+                            <button class="add-to-cart-btn bg-purple-100 text-purple-700 font-bold px-6 py-2 rounded-lg hover:bg-purple-200 transition-colors duration-200 transform active:scale-95 w-full" data-item-id="${item.id}">
+                                Add
+                            </button>
+                            <div class="quantity-control items-center justify-between border border-gray-300 rounded-lg w-full">
+                                <button class="cart-quantity-btn text-purple-600 hover:text-purple-800 px-2 py-1" data-item-id="${item.id}" data-change="-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                                <span class="quantity-text font-bold text-sm text-purple-700">1</span>
+                                <button class="cart-quantity-btn text-purple-600 hover:text-purple-800 px-2 py-1" data-item-id="${item.id}" data-change="1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+               
+                // Add event listeners for the new buttons
+                itemEl.querySelector('.add-to-cart-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    addToCart(restaurantId, item.id);
+                });
+                itemEl.querySelectorAll('.cart-quantity-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handleCartQuantityChange(e);
+                    });
+                });
+               
+                menuItemList.appendChild(itemEl);
+               
+                // Set initial button state
+                updateMenuItemButton(item.id);
+            });
+            // Clear any old AI suggestions
+            aiMenuSuggestion.classList.add('hidden');
+            aiMenuSuggestion.textContent = '';
+           
+            // Switch views
+            restaurantView.classList.add('hidden');
+            menuView.classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+        function showRestaurants() {
+            renderRestaurants(); // Render all restaurants
+            menuView.classList.add('hidden');
+            restaurantView.classList.remove('hidden');
+            currentRestaurantId = null;
+        }
+        // --- NEW: Router Function ---
+        function handleRoute() {
+            const hash = window.location.hash;
+           
+            if (hash.startsWith('#restaurant/')) {
+                const restaurantId = hash.split('/')[1];
+                showMenu(restaurantId);
+            } else {
+                showRestaurants();
+            }
+        }
+       
+        function calculateCartTotal() {
+            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        }
+       
+        // Updates the Add/Quantity button for a specific item on the menu page
+        function updateMenuItemButton(itemId) {
+            const control = document.getElementById(`item-control-${itemId}`);
+            if (!control) return; // Item is not on the currently visible menu
+           
+            const itemInCart = cart.find(item => item.id === itemId);
+           
+            if (itemInCart) {
+                control.classList.add('in-cart');
+                control.querySelector('.quantity-text').textContent = itemInCart.quantity;
+            } else {
+                control.classList.remove('in-cart');
+            }
+        }
+        function updateCart() {
+            if (cart.length === 0) {
+                cartItemsList.innerHTML = '';
+                cartEmptyState.classList.remove('hidden');
+                cartFooter.classList.add('hidden');
+                // Clear AI suggestion when cart is emptied
+                aiCartSuggestion.classList.add('hidden');
+                aiCartSuggestion.textContent = '';
+            } else {
+                cartEmptyState.classList.add('hidden');
+                cartFooter.classList.remove('hidden');
+                cartItemsList.innerHTML = '';
+               
+                cart.forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'flex items-center py-4';
+                    itemEl.innerHTML = `
+                        <div class="flex-grow">
+                            <p class="font-semibold text-gray-800">${item.name}</p>
+                            <p class="text-sm text-gray-600">${formatCurrency(item.price)}</p>
+                        </div>
+                        <div class="flex items-center gap-2 border border-gray-300 rounded-lg px-2 py-1">
+                            <button class="cart-quantity-btn" data-item-id="${item.id}" data-change="-1" ${item.quantity === 1 ? 'disabled class="text-gray-300 cursor-not-allowed"' : 'class="text-purple-600 hover:text-purple-800"'}>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                            </button>
+                            <span class="w-8 text-center font-bold text-sm text-purple-700">${item.quantity}</span>
+                            <button class="cart-quantity-btn text-purple-600 hover:text-purple-800" data-item-id="${item.id}" data-change="1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+                    `;
+                    itemEl.querySelectorAll('.cart-quantity-btn').forEach(btn => {
+                        btn.addEventListener('click', handleCartQuantityChange);
+                    });
+                    cartItemsList.appendChild(itemEl);
+                });
+            }
+           
+            const total = calculateCartTotal();
+            cartTotal.textContent = formatCurrency(total);
+            const totalItems = cart.reduce((count, item) => count + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.classList.toggle('hidden', totalItems === 0);
+           
+            // Update menu buttons in case items were removed from cart
+            if (menuView.offsetParent !== null) { // Check if menuView is visible
+                const menuItems = MOCK_MENUS[currentRestaurantId] || [];
+                menuItems.forEach(item => updateMenuItemButton(item.id));
+            }
+        }
+       
+        function handleCartQuantityChange(event) {
+            const button = event.currentTarget;
+            const itemId = button.dataset.itemId;
+            const change = parseInt(button.dataset.change);
+           
+            const itemInCart = cart.find(item => item.id === itemId);
+            if (itemInCart) {
+                itemInCart.quantity += change;
+                if (itemInCart.quantity === 0) {
+                    cart = cart.filter(item => item.id !== itemId);
+                }
+            }
+            updateCart();
+            updateMenuItemButton(itemId); // Update the button on the menu page
+        }
+        function addToCart(restaurantId, itemId) {
+            const menu = MOCK_MENUS[restaurantId];
+            const itemToAdd = menu.find(item => item.id === itemId);
+            if (!itemToAdd) return;
+           
+            const itemInCart = cart.find(item => item.id === itemToAdd.id);
+            if (itemInCart) {
+                itemInCart.quantity += 1;
+            } else {
+                cart.push({ ...itemToAdd, quantity: 1 });
+            }
+           
+            showNotification(`${itemToAdd.name} added to cart!`, false);
+            updateCart();
+            updateMenuItemButton(itemId); // Update the button on the menu page
+        }
+        function showCart() {
+            updateCart();
+            cartOverlay.classList.remove('hidden');
+            cartSidebar.classList.remove('translate-x-full');
+            cartSidebar.classList.add('sidebar-slide-in');
+            cartSidebar.classList.remove('sidebar-slide-out');
+        }
+        function hideCart() {
+            cartOverlay.classList.add('hidden');
+            cartSidebar.classList.remove('sidebar-slide-in');
+            cartSidebar.classList.add('sidebar-slide-out');
+        }
+       
+        function showPaymentModal() {
+            const total = calculateCartTotal();
+            paymentTotal.textContent = formatCurrency(total);
+           
+            hideCart();
+            paymentModal.classList.remove('hidden');
+            // Trigger animation
+            setTimeout(() => {
+                paymentContent.classList.add('modal-pop-in');
+                paymentContent.classList.remove('opacity-0');
+            }, 10);
+        }
+       
+        function hidePaymentModal() {
+            // Trigger animation
+            paymentModal.classList.add('hidden');
+            paymentContent.classList.remove('modal-pop-in');
+            paymentContent.classList.add('opacity-0');
+           
+            // Reset payment button
+            setTimeout(() => {
+                payButtonText.classList.remove('hidden');
+                paymentSpinner.classList.add('hidden');
+                confirmPaymentButton.disabled = false;
+                confirmPaymentButton.classList.remove('bg-green-300', 'cursor-not-allowed');
+                confirmPaymentButton.classList.add('bg-green-600', 'hover:bg-green-700');
+            }, 300); // Wait for animation to finish
+        }
+       
+        // --- Login Modal Functions ---
+        function showLoginModal() {
+            loginOverlay.classList.remove('hidden');
+            loginModal.classList.remove('hidden');
+            setTimeout(() => {
+                loginContent.classList.add('modal-pop-in');
+                loginContent.classList.remove('opacity-0');
+            }, 10);
+        }
+       
+        function hideLoginModal() {
+            loginOverlay.classList.add('hidden');
+            loginModal.classList.add('hidden');
+            loginContent.classList.remove('modal-pop-in');
+            loginContent.classList.add('opacity-0');
+        }
+       
+        // --- ✨ AI Helper Functions ---
+        /**
+         * Handles the "Help me choose!" button click on the menu page.
+         */
+        async function handleAiMenuHelper() {
+            aiMenuLoader.classList.remove('hidden');
+            aiMenuSuggestion.classList.add('hidden');
+            aiMenuHelperBtn.disabled = true;
+            try {
+                const restaurant = MOCK_RESTAURANTS.find(r => r.id === currentRestaurantId);
+                const menu = MOCK_MENUS[currentRestaurantId];
+               
+                if (!restaurant || !menu) {
+                    throw new Error("Could not find restaurant data.");
+                }
+                // Format the menu for a clean prompt
+                const menuPrompt = menu.map(item => `${item.name} (${formatCurrency(item.price)})`).join(', ');
+               
+                // Create a contextual prompt
+                const prompt = `I'm at "${restaurant.name}" which serves "${restaurant.cuisine}" food. I'm in the mood for something classic and popular. What's the one best dish for me on this menu? Keep the answer to one suggestion and a brief, 1-sentence reason. Here is the menu: ${menuPrompt}`;
+                const responseText = await callGeminiAPI(prompt);
+               
+                aiMenuSuggestion.textContent = responseText;
+                aiMenuSuggestion.classList.remove('hidden');
+            } catch (error) {
+                console.error("Error in AI Menu Helper:", error);
+                aiMenuSuggestion.textContent = "Sorry, I couldn't come up with a suggestion right now.";
+                aiMenuSuggestion.classList.remove('hidden');
+            } finally {
+                aiMenuLoader.classList.add('hidden');
+                aiMenuHelperBtn.disabled = false;
+            }
+        }
+        /**
+         * Handles the "Get pairing suggestions" button click in the cart.
+         */
+        async function handleAiCartHelper() {
+            if (cart.length === 0) {
+                aiCartSuggestion.textContent = "Please add some items to your cart first!";
+                aiCartSuggestion.classList.remove('hidden');
+                return;
+            }
+            aiCartLoader.classList.remove('hidden');
+            aiCartSuggestion.classList.add('hidden');
+            aiCartHelperBtn.disabled = true;
+            try {
+                const cartPrompt = cart.map(item => `${item.name} (x${item.quantity})`).join(', ');
+                const prompt = `I have the following items in my Indian food order: ${cartPrompt}. What would be a good drink (like a Lassi, soft drink, etc.) or a dessert to add to this meal? Give a brief, 1-2 sentence suggestion.`;
+                const responseText = await callGeminiAPI(prompt);
+               
+                aiCartSuggestion.textContent = responseText;
+                aiCartSuggestion.classList.remove('hidden');
+            } catch (error) {
+                console.error("Error in AI Cart Helper:", error);
+                aiCartSuggestion.textContent = "Sorry, I couldn't come up with a suggestion right now.";
+                aiCartSuggestion.classList.remove('hidden');
+            } finally {
+                aiCartLoader.classList.add('hidden');
+                aiCartHelperBtn.disabled = false;
+            }
+        }
+       
+        async function handlePayment() {
+            // Show loading state
+            payButtonText.classList.add('hidden');
+            paymentSpinner.classList.remove('hidden');
+            confirmPaymentButton.disabled = true;
+            confirmPaymentButton.classList.add('bg-green-300', 'cursor-not-allowed');
+            confirmPaymentButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            const orderPayload = {
+                user_id: "u123", // Hardcoded user ID
+                restaurant_id: currentRestaurantId,
+                items: cart.map(item => ({ item_id: item.id, quantity: item.quantity })),
+                total_amount: calculateCartTotal()
+            };
+            try {
+                const response = await mockOrderService(orderPayload);
+                // Order Success
+                hidePaymentModal();
+                showNotification(`Order ${response.data.order_id} confirmed!`, false);
+                cart = [];
+                updateCart(); // This will also reset menu buttons
+                window.location.hash = ''; // Go back to home page after order
+            } catch (error) {
+                // Order Failed
+                hidePaymentModal();
+                const errorMessage = error.data?.error || "An unknown error occurred.";
+                const orderId = error.data?.order?.order_id || "N/A";
+                showNotification(`Payment Failed for Order ${orderId}. ${errorMessage}`, true);
+            }
+        }
+       
+        let notificationTimeout;
+        function showNotification(message, isError = false) {
+            clearTimeout(notificationTimeout);
+           
+            notificationMessage.textContent = message;
+            notification.classList.remove('bg-green-500', 'bg-red-500', 'translate-x-full');
+           
+            if (isError) {
+                notification.classList.add('bg-red-500');
+            } else {
+                notification.classList.add('bg-green-500');
+            }
+           
+            // Animate in
+            notification.classList.remove('translate-x-full');
+           
+            // Hide after 3 seconds
+            notificationTimeout = setTimeout(() => {
+                notification.classList.add('translate-x-full');
+            }, 3000);
+        }
+       
+        function handleFilterClick(event) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-purple-100', 'text-purple-700');
+                btn.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+            });
+           
+            // Add active class to clicked button
+            const clickedButton = event.currentTarget;
+            clickedButton.classList.add('active', 'bg-purple-100', 'text-purple-700');
+            clickedButton.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+           
+            // Render restaurants with the new filter
+            const filter = clickedButton.dataset.filter;
+            renderRestaurants(filter);
+        }
+        // --- EVENT LISTENERS ---
+        // Listen to DOM load and hash changes to handle routing
+        document.addEventListener('DOMContentLoaded', handleRoute);
+        window.addEventListener('hashchange', handleRoute);
+       
+        cartButton.addEventListener('click', showCart);
+        closeCartButton.addEventListener('click', hideCart);
+        cartOverlay.addEventListener('click', hideCart);
+       
+        // Back button now changes hash, which triggers the router
+        backToRestaurantsButton.addEventListener('click', () => {
+            window.location.hash = '';
+        });
+       
+        checkoutButton.addEventListener('click', showPaymentModal);
+        cancelPaymentButton.addEventListener('click', hidePaymentModal);
+        confirmPaymentButton.addEventListener('click', handlePayment);
+        loginButton.addEventListener('click', showLoginModal);
+        closeLoginButton.addEventListener('click', hideLoginModal);
+        loginOverlay.addEventListener('click', hideLoginModal);
+       
+        // --- ✨ AI Event Listeners ---
+        aiMenuHelperBtn.addEventListener('click', handleAiMenuHelper);
+        aiCartHelperBtn.addEventListener('click', handleAiCartHelper);
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', handleFilterClick);
+        });
+       
+        // Update cart count on load (it's 0)
+        updateCart();
+    </script>
+</body>
+</html>
